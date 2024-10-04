@@ -11,7 +11,6 @@ import Items.Item;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -79,7 +78,7 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     public void run() {
         MapManager.initmaps();
-        initTileArray(MapManager.currentMap.currentmap);
+        initTileArray(MapManager.currentMap.tileIntArray);
         log.start();
         log.setMessage("Welcome to the Game!");
         while(true){
@@ -208,10 +207,12 @@ public class GamePanel extends JPanel implements Runnable {
                 }
                 return returnTile2;
             case 19:
-
                 return new Tile(Color.GREEN, tileSize, x, y, true, MapManager.tiles[23]);
+            case 32:
+                return new Tile(Color.ORANGE,tileSize, x, y, false, MapManager.tiles[24]);
+            default:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.tiles[id-8]);
         }
-        return new Tile(Color.BLACK,tileSize, x, y, true, MapManager.tiles[0]);
     }
     public void start(){
         gp = new Thread(this);
@@ -225,13 +226,21 @@ public class GamePanel extends JPanel implements Runnable {
         if(player.worldX <= currenttiles[0][0].worldX && player.facing == 0 ){
             changemapto(currentMap.left, 0);
         }
+        if(player.worldY >= currenttiles[currenttiles.length-1][currenttiles.length-1].worldY && player.facing == 2 ){
+            System.out.println("changing map to down");
+            changemapto(currentMap.down, 2);
+        }
+        if(player.worldX <= currenttiles[0][0].worldY && player.facing == 3 ){
+            System.out.println("changing map to up");
+            changemapto(currentMap.up, 3);
+        }
         frames++;
         inventoryopencooldown++;
     }
 
     private void changemapto(Map map, int direction) {
         if(map == null) return;
-        initTileArray(map.currentmap);
+        initTileArray(map.tileIntArray);
         switch(direction){
             case 1:
                 player.relocate(currenttiles[0][0].worldX,player.worldY);
@@ -242,23 +251,29 @@ public class GamePanel extends JPanel implements Runnable {
                 currentMap = currentMap.left;
                 break;
             case 2:
-                player.relocate(player.worldX,currenttiles[0][0].worldY);
                 if(inDoors){
+                    System.out.println("Player was outDoors. putting him to: outermapX: "+outermapX+", outermapY: "+outermapY);
                     player.relocate(outermapX,outermapY);
                     inDoors = false;
+                }else{
+                    player.relocate(player.worldX,currenttiles[0][0].worldY);
                 }
                 currentMap = currentMap.down;
+                break;
             case 3:
                 player.relocate(player.worldX,currenttiles[currenttiles.length-1][currenttiles.length-1].worldY);
                 currentMap = currentMap.up;
+                break;
         }
     }
     public void openDoor(Door door){
         inDoors = true;
         outermapX = player.worldX;
         outermapY = player.worldY;
-        initTileArray(door.innermap.currentmap);
-        player.relocate(player.worldX,currenttiles[currenttiles.length-1][currenttiles.length-1].worldY);
+        System.out.println("outermapX: "+outermapX+", outermapY: "+outermapY);
+        initTileArray(door.innermap.tileIntArray);
+        currentMap = door.innermap;
+        player.relocate(0,currenttiles[currenttiles.length-1][currenttiles.length-1].worldY);
     }
     private void checkInputs() {
         if(keyboard.down){
@@ -290,20 +305,31 @@ public class GamePanel extends JPanel implements Runnable {
             }
         UPressedForTheFirstTime = true;
         }
-        if(keyboard.escape){
-            player.damage(10);
-        }
     }
 
     private void tryToInteract() {
-        for(Chest entity : currentMap.chests){
-            if(entity == null) continue;
-            int entityX = entity.worldX;
-            int entityY = entity.worldY;
-            int playerX = player.worldX;
-            int playerY = player.worldY;
-            if(player.facing == 3 && playerY>entityY && playerY<entityY+tileSize*1.2 && playerX > entityX-tileSize/2 && playerX < entityX+tileSize/2){
-                usechest(entity);
+        if(currentMap.chests!=null){
+            for(Chest entity : currentMap.chests){
+                if(entity == null) continue;
+                int entityX = entity.worldX;
+                int entityY = entity.worldY;
+                int playerX = player.worldX;
+                int playerY = player.worldY;
+                if(player.facing == 3 && playerY>entityY && playerY<entityY+tileSize*1.2 && playerX > entityX-tileSize/2 && playerX < entityX+tileSize/2){
+                    usechest(entity);
+                }
+            }
+        }
+        if(currentMap.doors!=null){
+            for(Door door : currentMap.doors){
+                if(door == null) continue;
+                int entityX = door.worldX;
+                int entityY = door.worldY;
+                int playerX = player.worldX;
+                int playerY = player.worldY;
+                if(player.facing == 3 && playerY>entityY && playerY<entityY+tileSize*1.2 && playerX > entityX-tileSize/2 && playerX < entityX+tileSize/2){
+                    openDoor(door);
+                }
             }
         }
     }
@@ -457,7 +483,7 @@ public class GamePanel extends JPanel implements Runnable {
                 drawTile(g,tiles[i][j]);
             }
         }
-        if(currentMap.chests == null) return;
+        if(currentMap== null || currentMap.chests == null) return;
         for(Chest entity : currentMap.chests){
             drawEntity(g,entity);
         }
