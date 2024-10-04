@@ -1,7 +1,7 @@
 package Environmental;
 
-import Entities.Entity;
 import Interactions.Chest;
+import Interactions.Door;
 import Items.Heart;
 
 import javax.imageio.ImageIO;
@@ -17,15 +17,26 @@ public class MapManager {
     public static int[][] map2 = new int[46][46];
     public static int[][] path1 = new int[26][26];
     public static int[][] map3 = new int[46][46];
+    public static int[][] house1 = new int[7][7];
 
+    //int arrays are being loaded into the map objects.
+    //currentMap starts as the first map but will be changed to be the current map the player is in.
+    //can imagine the structure as a linked list but every knod has left right up and down pointer.
+
+    //indoormaps
+    public static Map housemap1 = new Map();
+
+    //outdoormaps
     public static Map currentMap = new Map();
     public static Map pathmap1 = new Map();
     public static Map pathmap2 = new Map();
     public static Map seaMap = new Map();
     public static Map townMap1 = new Map();
 
-    public static BufferedImage[] tiles = new BufferedImage[24];
+    //tilearrays
+    public static BufferedImage[] tiles = new BufferedImage[30];
     public static BufferedImage[] tiles32 = new BufferedImage[1];
+    //alternating tile textures
     public static BufferedImage[] altGrass = new BufferedImage[2];
     public static BufferedImage[] altWater = new BufferedImage[15];
 
@@ -34,19 +45,31 @@ public class MapManager {
         loadMap("Path1.txt",path1, 26,26);
         loadMap("World2.txt",map2,46,46);
         loadMap("World3.txt",map3,46,46);
-        pathmap2.currentmap = path1;
-        pathmap2.right = currentMap;
+
+        loadMap("House1.txt",house1,7,7);
+    // indoormaps
+        housemap1.tileIntArray = house1;
+        housemap1.down = currentMap;
+
+    //outdoormaps
+        currentMap.tileIntArray = map1;
         currentMap.left = pathmap2;
-        pathmap2.left = townMap1;
-        townMap1.currentmap = map3;
-        townMap1.right = pathmap2;
-        pathmap1.currentmap = path1;
-        seaMap.currentmap = map2;
-        seaMap.left = pathmap1;
-        currentMap.currentmap = map1;
         currentMap.right = pathmap1;
+
+        pathmap2.tileIntArray = path1;
+        pathmap2.right = currentMap;
+        pathmap2.left = townMap1;
+
+        townMap1.tileIntArray = map3;
+        townMap1.right = pathmap2;
+
+        pathmap1.tileIntArray = path1;
         pathmap1.left = currentMap;
         pathmap1.right = seaMap;
+
+        seaMap.tileIntArray = map2;
+        seaMap.left = pathmap1;
+
         initentities();
     }
 
@@ -55,6 +78,9 @@ public class MapManager {
                 new Chest(-tileSize*20,-tileSize*14,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
                 new Chest(-tileSize*22,tileSize*14,tileSize,new Heart("TwoLife4U",2),tiles[23]),
                 new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("ThreeLife4U",3),tiles[23])
+        };
+        currentMap.doors = new Door[]{
+                new Door(10*tileSize,-5*tileSize,tileSize,housemap1)
         };
     }
 
@@ -83,7 +109,7 @@ public class MapManager {
         } catch (IOException e) {
             System.out.println(e);
         }
-        for (int i = 8; i <= 31; i++) {
+        for (int i = 8; i <= 37; i++) {
             String filename = i + ".png"; // Construct filename
             try {
                 // Use getResource to read from the same directory as the class
