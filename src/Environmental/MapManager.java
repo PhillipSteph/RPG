@@ -52,9 +52,9 @@ public class MapManager {
 
     private static void initentities() {
         currentMap.chests = new Chest[]{
-                new Chest(-tileSize,-tileSize,tileSize,new Heart("OneLife4U",1),tiles[23]),
-                new Chest(-tileSize*2,tileSize,tileSize,new Heart("TwoLife4U",2),tiles[23]),
-                new Chest(tileSize,-tileSize*2,tileSize,new Heart("ThreeLife4U",3),tiles[23])
+                new Chest(-tileSize*20,-tileSize*14,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
+                new Chest(-tileSize*22,tileSize*14,tileSize,new Heart("TwoLife4U",2),tiles[23]),
+                new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("ThreeLife4U",3),tiles[23])
         };
     }
 

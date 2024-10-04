@@ -31,6 +31,9 @@ public class Entity {
     }
     public void damage(int damage){
         this.health -= damage;
+        if(this.health < 0){
+            this.health = 0;
+        }
     }
     public void addHealth(int health){
         this.health+=health;

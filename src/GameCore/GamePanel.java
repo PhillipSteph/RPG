@@ -1,10 +1,12 @@
 package GameCore;
 
+import Communication.PopUpMessage;
 import Entities.Entity;
 import Environmental.Map;
 import Environmental.MapManager;
 import Environmental.Tile;
 import Interactions.Chest;
+import Interactions.Door;
 import Items.Item;
 
 import javax.swing.*;
@@ -18,22 +20,35 @@ import static Environmental.MapManager.currentMap;
 public class GamePanel extends JPanel implements Runnable {
     Thread gp;
     long frames = 0;
+    int inventoryopencooldown = 0;
     int screenWidth = 1920;
     int screenHeight = 1080;
     final public static int tileSize = 120;
-    
-    int playerX = (screenWidth/2)-(tileSize/2);
-    int playerY = (screenHeight/2)-(tileSize/2);
 
     KeyEventListener keyboard = new KeyEventListener();
     MouseEventListener mouse = new MouseEventListener();
+
     public static Entity player = new Entity(0, 0, tileSize, 100);
+
+    int playerX = (screenWidth/2)-(tileSize/2);
+    int playerY = (screenHeight/2)-(tileSize/2);
+
+    int selectedinventoryslot = 0;
     Entity malte = new Entity(0,0,tileSize*2, 50);
 
     private Font pixelFont;
     private Font pixelFontBig;
 
+    public static PopUpMessage log = new PopUpMessage();
+
+    boolean UPressedForTheFirstTime = false;
+    boolean inDoors = false;
     Tile[][] currenttiles;
+
+    int outermapX = 0;
+    int outermapY = 0;
+
+
     public GamePanel(){
         this.addKeyListener(keyboard);
         this.addMouseListener(mouse);
@@ -65,6 +80,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void run() {
         MapManager.initmaps();
         initTileArray(MapManager.currentMap.currentmap);
+        log.start();
+        log.setMessage("Welcome to the Game!");
         while(true){
             update();
             repaint();
@@ -209,6 +226,7 @@ public class GamePanel extends JPanel implements Runnable {
             changemapto(currentMap.left, 0);
         }
         frames++;
+        inventoryopencooldown++;
     }
 
     private void changemapto(Map map, int direction) {
@@ -223,11 +241,26 @@ public class GamePanel extends JPanel implements Runnable {
                 player.relocate(currenttiles[currenttiles.length-1][currenttiles.length-1].worldX,player.worldY);
                 currentMap = currentMap.left;
                 break;
+            case 2:
+                player.relocate(player.worldX,currenttiles[0][0].worldY);
+                if(inDoors){
+                    player.relocate(outermapX,outermapY);
+                    inDoors = false;
+                }
+                currentMap = currentMap.down;
+            case 3:
+                player.relocate(player.worldX,currenttiles[currenttiles.length-1][currenttiles.length-1].worldY);
+                currentMap = currentMap.up;
         }
     }
-
+    public void openDoor(Door door){
+        inDoors = true;
+        outermapX = player.worldX;
+        outermapY = player.worldY;
+        initTileArray(door.innermap.currentmap);
+        player.relocate(player.worldX,currenttiles[currenttiles.length-1][currenttiles.length-1].worldY);
+    }
     private void checkInputs() {
-        boolean[] input = new boolean[]{keyboard.down, keyboard.up, keyboard.left,keyboard.right};
         if(keyboard.down){
             if(nocollision(0,5)) player.move(0,5);
         }
@@ -240,8 +273,25 @@ public class GamePanel extends JPanel implements Runnable {
         else if(keyboard.right){
             if(nocollision(5,0)) player.move(5,0);
         }
-        if(keyboard.shift){
+        if(keyboard.enter){
             tryToInteract();
+        }
+        if(keyboard.space && inventoryopencooldown>30){
+            selectedinventoryslot++;
+            if(selectedinventoryslot > player.inventory.length-1){
+                selectedinventoryslot = 0;
+            }
+            inventoryopencooldown = 0;
+        }
+        if(keyboard.use){
+            if(player.inventory[selectedinventoryslot]!=null){
+                player.inventory[selectedinventoryslot].use();
+                player.inventory[selectedinventoryslot] = null;
+            }
+        UPressedForTheFirstTime = true;
+        }
+        if(keyboard.escape){
+            player.damage(10);
         }
     }
 
@@ -260,6 +310,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void usechest(Chest entity) {
         player.addItem(entity.item);
+        log.setMessage("You just found: "+entity.item.name);
+
         for(int i = 0;i<currentMap.chests.length;i++){
             if(entity.equals(currentMap.chests[i])){
                 currentMap.chests[i] = null;
@@ -314,6 +366,22 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
         }
+        if(currentMap.chests !=null){
+            for (Chest chest : currentMap.chests) {
+                if(chest == null) continue;
+                // Calculate the chest's boundaries
+                int chestLeft = chest.worldX;
+                int chestRight = chest.worldX + tileSize; // Assuming chest is also the size of a tile
+                int chestTop = chest.worldY;
+                int chestBottom = chest.worldY + tileSize;
+
+                // Check for collision
+                if (playerRight > chestLeft && playerLeft < chestRight &&
+                        playerBottom > chestTop && playerTop < chestBottom) {
+                    return false; // Collision detected with a chest
+                }
+            }
+        }
 
         return true; // No collision
     }
@@ -351,11 +419,24 @@ public class GamePanel extends JPanel implements Runnable {
             g.setFont(pixelFont);
             int i = 0;
             for(Item item : player.inventory){
-                if(item == null) continue;
-                g.drawImage(item.image,screenWidth-450,200+i*50,25,25,null);
-                g.drawString(item.name,screenWidth-400,225+i*50);
-
+                if(i == selectedinventoryslot){
+                    g.setColor(new Color(255,255,255,90));
+                    g.fillRect(screenWidth-440,210+i*70,45,45);
+                }else{
+                    g.setColor(new Color(100,100,100,90));
+                    g.fillRect(screenWidth-440,210+i*70,45,45);
+                }
+                if(item == null){
+                    i++;
+                    continue;
+                }
+                g.drawImage(item.image,screenWidth-430,220+i*70,25,25,null);
+                g.drawString(item.name,screenWidth-380,245+i*70);
                 i++;
+            }
+            if(!UPressedForTheFirstTime) {
+                g.setColor(Color.white);
+                g.drawString("press U to use an item!", screenWidth - 500, screenHeight - 50);
             }
             firstinventoryopened = true;
         }else if(!firstinventoryopened){
@@ -365,14 +446,18 @@ public class GamePanel extends JPanel implements Runnable {
         for(int i=0;i<player.health;i+=10){
             g.drawImage(MapManager.tiles[22],50+i*4, screenHeight-50-tileSize/2,tileSize/2,tileSize/2,null);
         }
+        g.setFont(pixelFontBig);
+        g.setColor(Color.WHITE);
+        g.drawString(this.log.getMessage(),50,170);
     }
 
-    private void drawTiles(Graphics g, Tile tiles[][]) {
+    private void drawTiles(Graphics g, Tile[][] tiles) {
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles[0].length; j++) {
                 drawTile(g,tiles[i][j]);
             }
         }
+        if(currentMap.chests == null) return;
         for(Chest entity : currentMap.chests){
             drawEntity(g,entity);
         }
@@ -388,13 +473,11 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private boolean entityIsNotInRange(Entity entity) {
-        if(     entity == null
-                ||  playerX+(entity.worldX-player.worldX) <= -entity.size
-                ||  playerX+(entity.worldX-player.worldX) >= screenWidth
-                ||  playerY+(entity.worldY-player.worldY) <= -entity.size
-                ||  playerY+(entity.worldY-player.worldY) >= screenHeight
-        ) return true;
-        else return false;
+        return entity == null
+                || playerX + (entity.worldX - player.worldX) <= -entity.size
+                || playerX + (entity.worldX - player.worldX) >= screenWidth
+                || playerY + (entity.worldY - player.worldY) <= -entity.size
+                || playerY + (entity.worldY - player.worldY) >= screenHeight;
     }
 
     private void drawTile(Graphics g, Tile tile) {
