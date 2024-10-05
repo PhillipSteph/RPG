@@ -18,9 +18,11 @@ public class MapManager {
     public static int[][] map2 = new int[46][46];
     public static int[][] path1 = new int[26][26];
     public static int[][] map3 = new int[46][46];
+
     public static int[][] house1 = new int[7][7];
     public static int[][] house2 = new int[8][8];
 
+    public static int[][][] housearray = new int[][][]{house1, house2};
     //int arrays are being loaded into the map objects.
     //currentMap starts as the first map but will be changed to be the current map the player is in.
     //can imagine the structure as a linked list but every knod has left right up and down pointer.
@@ -43,41 +45,33 @@ public class MapManager {
     public static BufferedImage[] altGrass = new BufferedImage[2];
     public static BufferedImage[] altWater = new BufferedImage[15];
 
-    public static void initmaps(){
-        loadMap("World1.txt",map1,46,46); //loading txt into map1
-        loadMap("Path1.txt",path1, 26,26);
+    public static void initallmaps(){
         loadMap("World2.txt",map2,46,46);
-        loadMap("World3.txt",map3,46,46);
 
-        loadMap("House1.txt",house1,7,7);
-        loadMap("House2.txt",house2,8,8);
+        initmap(housemap1,house1,"House1.txt",7,7, null, null, null, currentMap); //houses
+        initmap(housemap2,house2,"House2.txt",8,8,null,null,null,currentMap);
 
-        // indoormaps
-        housemap1.tileIntArray = house1;
-        housemap1.down = currentMap;
+        initmap(currentMap,map1,"World1.txt",46,46,pathmap2,pathmap1,null,null); //normal maps
+        initmap(townMap1,map3,"World3.txt",46,46,null, pathmap2,null,null);
+        initmap(seaMap,map2,"World2.txt",46,46,pathmap1,null,null,null);
 
-        housemap2.tileIntArray = house2;
-        housemap2.down = currentMap;
-    //outdoormaps
-        currentMap.tileIntArray = map1;
-        currentMap.left = pathmap2;
-        currentMap.right = pathmap1;
-
-        pathmap2.tileIntArray = path1;
-        pathmap2.right = currentMap;
-        pathmap2.left = townMap1;
-
-        townMap1.tileIntArray = map3;
-        townMap1.right = pathmap2;
-
-        pathmap1.tileIntArray = path1;
-        pathmap1.left = currentMap;
-        pathmap1.right = seaMap;
-
-        seaMap.tileIntArray = map2;
-        seaMap.left = pathmap1;
+        initmap(pathmap2,path1,"Path1.txt",26,26,townMap1,currentMap,null,null); // paths
+        initmap(pathmap1,path1,"Path1.txt",26,26,currentMap,seaMap,null,null);
 
         initentities();
+    }
+
+    private static void initmap(Map map, int[][] tilearray, String file, int width, int height, Map left, Map right, Map up, Map down) {
+        loadMap(file,tilearray,width,height);
+
+        map.tileIntArray = tilearray;
+
+        map.left = left;
+        map.right = right;
+        map.up = up;
+        map.down = down;
+
+        createDoors(map);
     }
 
     private static void initentities() {
@@ -85,10 +79,6 @@ public class MapManager {
                 new Chest(-tileSize*20,-tileSize*14,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
                 new Chest(-tileSize*22,tileSize*14,tileSize,new Heart("TwoLife4U",2),tiles[23]),
                 new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("ThreeLife4U",3),tiles[23])
-        };
-        currentMap.doors = new Door[]{
-                new Door(10*tileSize,-5*tileSize,tileSize,housemap1),
-                new Door(19*tileSize,-3*tileSize,tileSize,housemap2)
         };
         housemap1.chests = new Chest[]{
                 new Chest(tileSize,-tileSize*3,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
@@ -98,6 +88,42 @@ public class MapManager {
         housemap2.chests = new Chest[]{
                 new Chest(tileSize*2,-tileSize*3,tileSize,new Gems("Small Gem",5),tiles[23]),
         };
+    }
+    public static void createDoors(Map desiredmap){
+        int[][] map = desiredmap.tileIntArray;
+        int totalYpixelsize = map.length*tileSize;
+        int totalXpixelsize = map[0].length*tileSize;
+
+        desiredmap.doors = new Door[20];
+        int doorindex = 0;
+
+        for (int i = 0; i < map.length; i++) {
+            int y = -(totalYpixelsize/2)+(i*tileSize);
+            for (int j = 0; j < map[0].length; j++) {
+                int x = -(totalXpixelsize/2)+(j*tileSize);
+//                tiles[i][j] = getTilefromID(map[i][j], y, x);
+                if(map[i][j] == 14){
+                    System.out.println("14 at: "+i+" "+j);
+                    desiredmap.doors[doorindex++] = new Door(x,y,tileSize,getrandominnermap(desiredmap));
+                }
+            }
+        }
+        for(Door door: desiredmap.doors){
+            if(door == null) continue;
+            System.out.println("Door at: "+door.worldX+" X "+door.worldY+" Y");
+        }
+    }
+    public static int randomhouseindex = 0;
+    public static Map getrandominnermap(Map outermap) {
+        randomhouseindex++;
+        if(randomhouseindex>=housearray.length){
+            randomhouseindex = 0;
+        }
+        Map newmap = new Map();
+        newmap.tileIntArray = housearray[randomhouseindex];
+
+        newmap.down = outermap;
+        return newmap;
     }
 
     public static void loadMap(String filepath, int[][] map, int width, int height){
