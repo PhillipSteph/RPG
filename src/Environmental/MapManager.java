@@ -46,10 +46,7 @@ public class MapManager {
     public static BufferedImage[] altWater = new BufferedImage[15];
 
     public static void initallmaps(){
-        loadMap("World2.txt",map2,46,46);
-
-        initmap(housemap1,house1,"House1.txt",7,7, null, null, null, currentMap); //houses
-        initmap(housemap2,house2,"House2.txt",8,8,null,null,null,currentMap);
+        loadAllHouseMaps(); // all housemaps get tile arrays, cause they're given randomly
 
         initmap(currentMap,map1,"World1.txt",46,46,pathmap2,pathmap1,null,null); //normal maps
         initmap(townMap1,map3,"World3.txt",46,46,null, pathmap2,null,null);
@@ -59,6 +56,11 @@ public class MapManager {
         initmap(pathmap1,path1,"Path1.txt",26,26,currentMap,seaMap,null,null);
 
         initentities();
+    }
+
+    private static void loadAllHouseMaps() {
+        loadMap("House1.txt",house1,7,7);
+        loadMap("House2.txt",house2,8,8);
     }
 
     private static void initmap(Map map, int[][] tilearray, String file, int width, int height, Map left, Map right, Map up, Map down) {
@@ -79,14 +81,6 @@ public class MapManager {
                 new Chest(-tileSize*20,-tileSize*14,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
                 new Chest(-tileSize*22,tileSize*14,tileSize,new Heart("TwoLife4U",2),tiles[23]),
                 new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("ThreeLife4U",3),tiles[23])
-        };
-        housemap1.chests = new Chest[]{
-                new Chest(tileSize,-tileSize*3,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
-                new Chest(0,-tileSize*3,tileSize,new Gems("Big Gem",10),tiles[23]),
-
-        };
-        housemap2.chests = new Chest[]{
-                new Chest(tileSize*2,-tileSize*3,tileSize,new Gems("Small Gem",5),tiles[23]),
         };
     }
     public static void createDoors(Map desiredmap){
