@@ -11,6 +11,7 @@ public class Entity {
     public int facing;
     public int health;
     public int maxhealth;
+    public int money = 0;
     public Item[] inventory = new Item[10];
     public BufferedImage image;
     public Entity(int worldX, int worldY, int size, int maxhealth){
@@ -34,6 +35,12 @@ public class Entity {
         if(this.health < 0){
             this.health = 0;
         }
+    }
+    public void addMoney(int money){
+        this.money+=money;
+    }
+    public void pay(int money){
+        this.money-=money;
     }
     public void addHealth(int health){
         this.health+=health;
