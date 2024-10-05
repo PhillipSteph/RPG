@@ -77,7 +77,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        MapManager.initmaps();
+        MapManager.initallmaps();
         initTileArray(MapManager.currentMap.tileIntArray);
         log.start();
         log.setMessage("Welcome to the Game!");
@@ -478,6 +478,7 @@ public class GamePanel extends JPanel implements Runnable {
         for(int i=0;i<player.health;i+=10){
             g.drawImage(MapManager.tiles[22],50+i*4, screenHeight-50-tileSize/2,tileSize/2,tileSize/2,null);
         }
+
         g.setFont(pixelFont);
         g.drawImage(MapManager.tiles[31],50,screenHeight-tileSize*5/3,tileSize/2,tileSize/2,null);
         g.setColor(Color.WHITE);
