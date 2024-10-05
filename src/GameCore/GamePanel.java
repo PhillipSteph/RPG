@@ -81,6 +81,8 @@ public class GamePanel extends JPanel implements Runnable {
         initTileArray(MapManager.currentMap.tileIntArray);
         log.start();
         log.setMessage("Welcome to the Game!");
+        player.money = 10;
+
         while(true){
             update();
             repaint();
@@ -210,6 +212,8 @@ public class GamePanel extends JPanel implements Runnable {
                 return new Tile(Color.GREEN, tileSize, x, y, true, MapManager.tiles[23]);
             case 32:
                 return new Tile(Color.ORANGE,tileSize, x, y, false, MapManager.tiles[24]);
+            case 38:
+                return new Tile(Color.ORANGE,tileSize, x, y, false, MapManager.tiles[30]);
             default:
                 return new Tile(Color.RED, tileSize, x, y, true, MapManager.tiles[id-8]);
         }
@@ -434,6 +438,8 @@ public class GamePanel extends JPanel implements Runnable {
         g.drawString(frames+" Frames", 50, 50);
         g.drawString(frames/120+" seconds",50,70);
         g.drawString(player.worldX+" X | "+player.worldY+" Y |",50,90);
+
+        g.setFont(pixelFont);
         if(keyboard.inventoryOpen){
             g.setColor(new Color(81, 4, 4, 189));
             g.fillRect(screenWidth-500,100,400,screenHeight-200);
@@ -472,7 +478,11 @@ public class GamePanel extends JPanel implements Runnable {
         for(int i=0;i<player.health;i+=10){
             g.drawImage(MapManager.tiles[22],50+i*4, screenHeight-50-tileSize/2,tileSize/2,tileSize/2,null);
         }
-        g.setFont(pixelFontBig);
+        g.setFont(pixelFont);
+        g.drawImage(MapManager.tiles[31],50,screenHeight-tileSize*5/3,tileSize/2,tileSize/2,null);
+        g.setColor(Color.WHITE);
+        g.drawString(player.money+" Gems",120,screenHeight-tileSize*4/3);
+
         g.setColor(Color.WHITE);
         g.drawString(this.log.getMessage(),50,170);
     }

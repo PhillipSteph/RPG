@@ -2,6 +2,7 @@ package Environmental;
 
 import Interactions.Chest;
 import Interactions.Door;
+import Items.Gems;
 import Items.Heart;
 
 import javax.imageio.ImageIO;
@@ -18,6 +19,7 @@ public class MapManager {
     public static int[][] path1 = new int[26][26];
     public static int[][] map3 = new int[46][46];
     public static int[][] house1 = new int[7][7];
+    public static int[][] house2 = new int[8][8];
 
     //int arrays are being loaded into the map objects.
     //currentMap starts as the first map but will be changed to be the current map the player is in.
@@ -25,6 +27,7 @@ public class MapManager {
 
     //indoormaps
     public static Map housemap1 = new Map();
+    public static Map housemap2 = new Map();
 
     //outdoormaps
     public static Map currentMap = new Map();
@@ -34,7 +37,7 @@ public class MapManager {
     public static Map townMap1 = new Map();
 
     //tilearrays
-    public static BufferedImage[] tiles = new BufferedImage[30];
+    public static BufferedImage[] tiles = new BufferedImage[32];
     public static BufferedImage[] tiles32 = new BufferedImage[1];
     //alternating tile textures
     public static BufferedImage[] altGrass = new BufferedImage[2];
@@ -47,10 +50,14 @@ public class MapManager {
         loadMap("World3.txt",map3,46,46);
 
         loadMap("House1.txt",house1,7,7);
-    // indoormaps
+        loadMap("House2.txt",house2,8,8);
+
+        // indoormaps
         housemap1.tileIntArray = house1;
         housemap1.down = currentMap;
 
+        housemap2.tileIntArray = house2;
+        housemap2.down = currentMap;
     //outdoormaps
         currentMap.tileIntArray = map1;
         currentMap.left = pathmap2;
@@ -80,7 +87,16 @@ public class MapManager {
                 new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("ThreeLife4U",3),tiles[23])
         };
         currentMap.doors = new Door[]{
-                new Door(10*tileSize,-5*tileSize,tileSize,housemap1)
+                new Door(10*tileSize,-5*tileSize,tileSize,housemap1),
+                new Door(19*tileSize,-3*tileSize,tileSize,housemap2)
+        };
+        housemap1.chests = new Chest[]{
+                new Chest(tileSize,-tileSize*3,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
+                new Chest(0,-tileSize*3,tileSize,new Gems("Big Gem",10),tiles[23]),
+
+        };
+        housemap2.chests = new Chest[]{
+                new Chest(tileSize*2,-tileSize*3,tileSize,new Gems("Small Gem",5),tiles[23]),
         };
     }
 
@@ -109,7 +125,7 @@ public class MapManager {
         } catch (IOException e) {
             System.out.println(e);
         }
-        for (int i = 8; i <= 37; i++) {
+        for (int i = 8; i <= 39; i++) {
             String filename = i + ".png"; // Construct filename
             try {
                 // Use getResource to read from the same directory as the class
