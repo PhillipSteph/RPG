@@ -4,12 +4,16 @@ import Interactions.Chest;
 import Interactions.Door;
 import Items.Gems;
 import Items.Heart;
+import Items.Item;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static GameCore.GamePanel.tileSize;
 
@@ -26,6 +30,8 @@ public class MapManager {
     //int arrays are being loaded into the map objects.
     //currentMap starts as the first map but will be changed to be the current map the player is in.
     //can imagine the structure as a linked list but every knod has left right up and down pointer.
+
+    final static Random random = new Random();
 
     //indoormaps
     public static Map housemap1 = new Map();
@@ -45,15 +51,24 @@ public class MapManager {
     public static BufferedImage[] altGrass = new BufferedImage[2];
     public static BufferedImage[] altWater = new BufferedImage[15];
 
+    //itempool
+    public static Item[] itempool = new Item[]{
+            new Heart("Big Heart",3),
+            new Heart("Medium Heart",2),
+            new Heart("Small Heart",1),
+            new Gems("Big Gem",20),
+            new Gems("Gem",10),
+            new Gems("Small Gem",5),
+    };
     public static void initallmaps(){
-        loadAllHouseMaps(); // all housemaps get tile arrays, cause they're given randomly
+        loadAllHouseMaps(); // all housemaps are given tile arrays, cause they're given randomly
 
-        initmap(currentMap,map1,"World1.txt",46,46,pathmap2,pathmap1,null,null); //normal maps
-        initmap(townMap1,map3,"World3.txt",46,46,null, pathmap2,null,null);
-        initmap(seaMap,map2,"World2.txt",46,46,pathmap1,null,null,null);
+        initmap(currentMap,map1,"World1.txt",pathmap2,pathmap1,null,null); //normal maps
+        initmap(townMap1,map3,"World3.txt",null, pathmap2,null,null);
+        initmap(seaMap,map2,"World2.txt",pathmap1,null,null,null);
 
-        initmap(pathmap2,path1,"Path1.txt",26,26,townMap1,currentMap,null,null); // paths
-        initmap(pathmap1,path1,"Path1.txt",26,26,currentMap,seaMap,null,null);
+        initmap(pathmap2,path1,"Path1.txt",townMap1,currentMap,null,null); // paths
+        initmap(pathmap1,path1,"Path1.txt",currentMap,seaMap,null,null);
 
         initentities();
     }
@@ -63,7 +78,9 @@ public class MapManager {
         loadMap("House2.txt",house2,8,8);
     }
 
-    private static void initmap(Map map, int[][] tilearray, String file, int width, int height, Map left, Map right, Map up, Map down) {
+    private static void initmap(Map map, int[][] tilearray, String file, Map left, Map right, Map up, Map down) {
+        int width = tilearray.length;
+        int height = tilearray[0].length;
         loadMap(file,tilearray,width,height);
 
         map.tileIntArray = tilearray;
@@ -95,7 +112,6 @@ public class MapManager {
             int y = -(totalYpixelsize/2)+(i*tileSize);
             for (int j = 0; j < map[0].length; j++) {
                 int x = -(totalXpixelsize/2)+(j*tileSize);
-//                tiles[i][j] = getTilefromID(map[i][j], y, x);
                 if(map[i][j] == 14){
                     System.out.println("14 at: "+i+" "+j);
                     desiredmap.doors[doorindex++] = new Door(x,y,tileSize,getrandominnermap(desiredmap));
@@ -117,7 +133,40 @@ public class MapManager {
         newmap.tileIntArray = housearray[randomhouseindex];
 
         newmap.down = outermap;
+        generaterandomchests(newmap);
         return newmap;
+    }
+
+    private static void generaterandomchests(Map generatedmap) {
+        int[][] map = generatedmap.tileIntArray;
+        List<Chest> chestList = new ArrayList<>();
+        int totalYpixelsize = map.length*tileSize;
+        int totalXpixelsize = map[0].length*tileSize;
+
+        for (int i = 0; i < map.length; i++) {
+            int y = -(totalYpixelsize/2)+(i*tileSize);
+            for (int j = 0; j < map[0].length; j++) {
+                int x = -(totalXpixelsize/2)+(j*tileSize);
+                // Check the criteria
+                if (map[i][j] == 32 && (i < map.length-1 && map[i+1][j] == 32) && (random.nextInt(100) < 5)) {
+                    System.out.println("32 at: " + i + " " + j);
+
+                    Chest newChest = new Chest(x, y, tileSize, getrandomitem(), tiles[23]);
+                    chestList.add(newChest);
+                }
+            }
+        }
+
+        // Convert the list to an array
+        Chest[] chests = new Chest[chestList.size()];
+        chests = chestList.toArray(chests);
+
+     generatedmap.chests = chests;
+    }
+
+    private static Item getrandomitem() {
+            int randomIndex = random.nextInt(itempool.length); // Generate a random index
+            return itempool[randomIndex]; // Return the item at that index
     }
 
     public static void loadMap(String filepath, int[][] map, int width, int height){
