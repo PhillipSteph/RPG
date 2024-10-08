@@ -48,6 +48,16 @@ public class Entity {
             this.health = maxhealth;
         }
     }
+    public void aligninventory(){
+        for(int i=0;i< inventory.length;i++){
+            if(inventory[i]==null && i<inventory.length-1 && inventory[i+1]!=null){
+                for(int j = i;j<inventory.length-1;j++){
+                    inventory[j] = inventory[j+1];
+                    inventory[j+1] = null;
+                }
+            }
+        }
+    }
     public boolean isDead(){
         if(health<=0) return true;
         return false;

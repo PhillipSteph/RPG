@@ -20,6 +20,7 @@ public class GamePanel extends JPanel implements Runnable {
     Thread gp;
     long frames = 0;
     int inventoryopencooldown = 0;
+    int itemusagecooldown = 0;
     int screenWidth = 1920;
     int screenHeight = 1080;
     final public static int tileSize = 120;
@@ -240,6 +241,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
         frames++;
         inventoryopencooldown++;
+        itemusagecooldown++;
     }
 
     private void changemapto(Map map, int direction) {
@@ -295,19 +297,22 @@ public class GamePanel extends JPanel implements Runnable {
         if(keyboard.enter){
             tryToInteract();
         }
-        if(keyboard.space && inventoryopencooldown>30){
+        if(keyboard.space && keyboard.inventoryOpen && inventoryopencooldown>30){
             selectedinventoryslot++;
             if(selectedinventoryslot > player.inventory.length-1){
                 selectedinventoryslot = 0;
             }
             inventoryopencooldown = 0;
         }
-        if(keyboard.use){
+        if(keyboard.use && keyboard.inventoryOpen && itemusagecooldown>60){
             if(player.inventory[selectedinventoryslot]!=null){
-                player.inventory[selectedinventoryslot].use();
-                player.inventory[selectedinventoryslot] = null;
+                if(player.inventory[selectedinventoryslot].use()){
+                    player.inventory[selectedinventoryslot] = null;
+                    player.aligninventory();
+                }
             }
         UPressedForTheFirstTime = true;
+            itemusagecooldown = 0;
         }
     }
 
@@ -339,6 +344,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void usechest(Chest entity) {
+        if(player.inventory[player.inventory.length-1]!=null){
+            log.setMessage("inventory is full!");
+            return;
+        }
         player.addItem(entity.item);
         log.setMessage("You just found: "+entity.item.name);
 

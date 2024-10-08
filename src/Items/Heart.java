@@ -1,6 +1,6 @@
 package Items;
 
-import java.awt.image.BufferedImage;
+import GameCore.GamePanel;
 
 import static Environmental.MapManager.tiles;
 import static GameCore.GamePanel.player;
@@ -25,8 +25,13 @@ public class Heart extends Item{
         this.image = tiles[22];
     }
     @Override
-    public void use(){
+    public boolean use(){
+        if(player.health==100){
+            GamePanel.log.setMessage("Health is full!");
+            return false;
+        }
         player.addHealth(life);
         this.life = 0;
+        return true;
     }
 }

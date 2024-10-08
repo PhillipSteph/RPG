@@ -52,15 +52,10 @@ public class MapManager {
     public static BufferedImage[] altWater = new BufferedImage[15];
 
     //itempool
-    public static Item[] itempool = new Item[]{
-            new Heart("Big Heart",3),
-            new Heart("Medium Heart",2),
-            new Heart("Small Heart",1),
-            new Gems("Big Gem",20),
-            new Gems("Gem",10),
-            new Gems("Small Gem",5),
-    };
+    public static Item[] itempool = new Item[]{};
     public static void initallmaps(){
+        getTileimages();
+        inititempool();
         loadAllHouseMaps(); // all housemaps are given tile arrays, cause they're given randomly
 
         initmap(currentMap,map1,"World1.txt",pathmap2,pathmap1,null,null); //normal maps
@@ -71,6 +66,17 @@ public class MapManager {
         initmap(pathmap1,path1,"Path1.txt",currentMap,seaMap,null,null);
 
         initentities();
+    }
+
+    private static void inititempool() {
+        itempool = new Item[]{
+                new Heart("Big Heart",3),
+                new Heart("Medium Heart",2),
+                new Heart("Small Heart",1),
+                new Gems("Big Gem",20),
+                new Gems("Gem",10),
+                new Gems("Small Gem",5)
+        };
     }
 
     private static void loadAllHouseMaps() {
@@ -95,9 +101,9 @@ public class MapManager {
 
     private static void initentities() {
         currentMap.chests = new Chest[]{
-                new Chest(-tileSize*20,-tileSize*14,tileSize,new Heart("ThreeLife4U",3),tiles[23]),
-                new Chest(-tileSize*22,tileSize*14,tileSize,new Heart("TwoLife4U",2),tiles[23]),
-                new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("ThreeLife4U",3),tiles[23])
+                new Chest(-tileSize*20,-tileSize*14,tileSize,new Heart("Big Heart",3),tiles[23]),
+                new Chest(-tileSize*22,tileSize*14,tileSize,new Heart("Medium Heart",2),tiles[23]),
+                new Chest(tileSize*18,-tileSize*16,tileSize,new Heart("Small Heart",3),tiles[23])
         };
     }
     public static void createDoors(Map desiredmap){
@@ -194,6 +200,8 @@ public class MapManager {
         } catch (IOException e) {
             System.out.println(e);
         }
+    }
+    public static void getTileimages(){
         for (int i = 8; i <= 39; i++) {
             String filename = i + ".png"; // Construct filename
             try {
@@ -263,5 +271,4 @@ public class MapManager {
             }
         }
     }
-
 }

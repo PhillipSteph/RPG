@@ -11,8 +11,9 @@ public class Gems extends Item{
     }
 
     @Override
-    public void use(){
+    public boolean use(){
         player.addMoney(money);
         this.money = 0;
+        return true;
     }
 }
