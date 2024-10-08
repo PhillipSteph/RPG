@@ -50,6 +50,8 @@ public class MapManager {
     //alternating tile textures
     public static BufferedImage[] altGrass = new BufferedImage[2];
     public static BufferedImage[] altWater = new BufferedImage[15];
+    public static BufferedImage[] house = new BufferedImage[14];
+
 
     //itempool
     public static Item[] itempool = new Item[]{};
@@ -118,7 +120,7 @@ public class MapManager {
             int y = -(totalYpixelsize/2)+(i*tileSize);
             for (int j = 0; j < map[0].length; j++) {
                 int x = -(totalXpixelsize/2)+(j*tileSize);
-                if(map[i][j] == 14){
+                if(map[i][j] == 14 || map[i][j]==43){
                     System.out.println("14 at: "+i+" "+j);
                     desiredmap.doors[doorindex++] = new Door(x,y,tileSize,getrandominnermap(desiredmap));
                 }
@@ -260,6 +262,23 @@ public class MapManager {
                 URL imageUrl = MapManager.class.getResource(filename);
                 if (imageUrl != null) {
                     altWater[i - 1] = ImageIO.read(imageUrl); // Read the image
+                    System.out.println("Successfully loaded: " + filename);
+                } else {
+                    System.err.println("Image not found: " + filename);
+                }
+            } catch (IOException e) {
+                System.err.println("Error loading image: " + filename);
+                System.err.println("Reason: " + e.getMessage());
+                e.printStackTrace(); // Print the full stack trace for more context
+            }
+        }
+        for (int i = 1; i <= 14; i++) {
+            String filename = "h"+i + ".png"; // Construct filename
+            try {
+                // Use getResource to read from the same directory as the class
+                URL imageUrl = MapManager.class.getResource(filename);
+                if (imageUrl != null) {
+                    house[i - 1] = ImageIO.read(imageUrl); // Read the image
                     System.out.println("Successfully loaded: " + filename);
                 } else {
                     System.err.println("Image not found: " + filename);

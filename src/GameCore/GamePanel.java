@@ -215,6 +215,34 @@ public class GamePanel extends JPanel implements Runnable {
                 return new Tile(Color.ORANGE,tileSize, x, y, false, MapManager.tiles[24]);
             case 38:
                 return new Tile(Color.ORANGE,tileSize, x, y, false, MapManager.tiles[30]);
+            case 40:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[0]);
+            case 41:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[1]);
+            case 42:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[2]);
+            case 43:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[3]);
+            case 44:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[4]);
+            case 45:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[5]);
+            case 46:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[6]);
+            case 47:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[7]);
+            case 48:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[8]);
+            case 49:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[9]);
+            case 50:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[10]);
+            case 51:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[11]);
+            case 52:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[12]);
+            case 53:
+                return new Tile(Color.RED, tileSize, x, y, true, MapManager.house[13]);
             default:
                 return new Tile(Color.RED, tileSize, x, y, true, MapManager.tiles[id-8]);
         }
